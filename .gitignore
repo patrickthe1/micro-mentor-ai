@@ -1,0 +1,20 @@
+# Node dependencies  
+node_modules/  
+
+# Environment variables  
+.env  
+
+# Logs  
+npm-debug.log*  
+yarn-debug.log*  
+yarn-error.log*  
+
+# Editor/OS-specific files  
+.DS_Store  
+.vscode/  
+.idea/  
+Thumbs.db  
+
+# Cursor AI metadata (if any)  
+currsorrules.md  
+
