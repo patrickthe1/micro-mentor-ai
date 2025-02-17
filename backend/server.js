@@ -10,6 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 app.post("/api/advice", async (req, res) => {
+  console.log("Received request:", req.method, req.url, req.body);
   const { challenge } = req.body;
   if (!challenge) {
     return res.status(400).json({ error: "Challenge is required." });
