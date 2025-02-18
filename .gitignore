@@ -16,5 +16,9 @@ yarn-error.log*
 Thumbs.db  
 
 # Cursor AI metadata (if any)  
-currsorrules.md  
+currsorrules.md 
+.cursorrules 
 
+# Git line endings
+.gitattributes
+projectContext.md

@@ -13,11 +13,14 @@
     <main>
         <form id="challenge-form">
             <input type="text" id="user-challenge" placeholder="Enter your challenge here..." required>
-            <button type="submit">Get Advice</button>
+            <button type="submit" id="submit-btn">
+                <span class="button-text">Get Advice</span>
+                <div class="spinner hidden" aria-hidden="true"></div>
+            </button>
         </form>
         <section id="advice-section">
             <h2>AI-Generated Advice</h2>
-            <p id="advice-output"></p>
+            <p id="advice-output" aria-live="polite"></p>
         </section>
     </main>
     <script src="script.js"></script>
