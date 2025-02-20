@@ -22,23 +22,24 @@ app.post("/api/advice", async (req, res) => {
     const advice = await generateAdvice(challenge);
     res.json({ advice });
   } catch (error) {
-    // Only log in development environment
+    // Log error in development
     if (process.env.NODE_ENV === 'development') {
       console.error('Error processing request:', error.message);
     }
     
-    // More specific error handling
-    if (!error.status) {
-      res.status(500).json({ 
-        error: "Server connection error. Please try again later." 
-      });
-    } else {
-      res.status(error.status).json({ 
-        error: error.message || "An unexpected error occurred. Please try again later." 
+    // Handle specific API errors
+    if (error.message.includes("AI service is temporarily busy")) {
+      return res.status(503).json({
+        error: "Our AI advisor is currently busy. Please try again in a moment."
       });
     }
+
+    // Handle other errors
+    res.status(500).json({ 
+      error: "An unexpected error occurred while processing your request. Please try again." 
+    });
   }
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));

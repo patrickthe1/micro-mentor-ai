@@ -36,7 +36,7 @@ const commonWords = new Set([
 function hasEnoughCommonWords(text) {
     const words = text.toLowerCase().split(/\s+/);
     const commonWordCount = words.filter(word => commonWords.has(word)).length;
-    return commonWordCount / words.length >= 0.3; // At least 30% should be common words
+    return commonWordCount / words.length >= 0.1; // At least 30% should be common words
 }
 
 function containsOffensiveContent(text) {
@@ -154,24 +154,22 @@ document.addEventListener("DOMContentLoaded", () => {
         event.preventDefault();
         const challenge = userChallengeInput.value.trim();
         
-        // Validate before proceeding with API call
         if (!validateChallenge(challenge)) {
             return;
         }
 
-        // If validation passes, proceed with the API call
         setLoadingState(true);
         adviceOutput.classList.remove("show");
 
         try {
             // First check if we're online
-            if (!navigator.onLine) {
-                throw new Error("Network error: Please check your internet connection and try again.");
+            if (!Navigator.onLine) {
+                throw new Error("You appear to be offline. Please check your internet connection.");
             }
 
             let response;
             try {
-                response = await fetch("http://localhost:5000/api/advice", {
+                response = await fetch("http://192.168.0.103:5000/api/advice", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -179,7 +177,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     body: JSON.stringify({ challenge }),
                 });
             } catch (fetchError) {
-                throw new Error("Network error: Please check your internet connection and try again.");
+                // This error occurs when the server is unreachable
+                throw new Error("Server connection error. Please check if the server is running.");
             }
 
             let data;
@@ -190,12 +189,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             if (!response.ok) {
-                throw new Error(data.error || "Server error: Failed to get advice. Please try again.");
+                // This handles errors sent from the server
+                throw new Error(data.error || "An error occurred while getting advice. Please try again.");
             }
 
             displayAdvice(data.advice);
         } catch (error) {
-            displayAdvice(error.message || "An unexpected error occurred. Please try again.", true);
+            displayAdvice(error.message, true);
         } finally {
             setLoadingState(false);
         }
