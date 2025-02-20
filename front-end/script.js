@@ -10,8 +10,87 @@ function debounce(func, wait) {
     };
 }
 
+// Add these validation helper functions at the top
+function containsRepeatedCharacters(text, threshold = 3) {
+    const regex = new RegExp(`(.)\\1{${threshold - 1},}`);
+    return regex.test(text);
+}
 
+function hasValidWordRatio(text) {
+    // Split into words and filter out non-word content
+    const words = text.split(/\s+/).filter(word => /^[a-zA-Z]+$/.test(word));
+    const totalChars = text.replace(/\s/g, '').length;
+    
+    // Check if at least 50% of characters form valid words
+    return words.join('').length / totalChars >= 0.5;
+}
 
+// Add common English words dictionary (just a small sample)
+const commonWords = new Set([
+    "i", "am", "is", "are", "the", "with", "help", "need", "want", "feel",
+    "how", "what", "why", "when", "where", "who", "can", "could", "should",
+    "work", "life", "time", "stress", "focus", "anxiety", "depression",
+    // ... add more relevant words
+]);
+
+function hasEnoughCommonWords(text) {
+    const words = text.toLowerCase().split(/\s+/);
+    const commonWordCount = words.filter(word => commonWords.has(word)).length;
+    return commonWordCount / words.length >= 0.3; // At least 30% should be common words
+}
+
+function containsOffensiveContent(text) {
+    const offensivePatterns = /\b(hate|kill|death|violent|offensive terms...)\b/i;
+    return offensivePatterns.test(text);
+}
+
+function isValidChallenge(text) {
+    // Convert to lowercase for consistent checking
+    const lowerText = text.toLowerCase();
+    
+    // Check for keyboard smashing patterns
+    if (containsRepeatedCharacters(lowerText)) {
+        return {
+            isValid: false,
+            message: "Your challenge contains too many repeated characters. Please rephrase it."
+        };
+    }
+
+    // Check for random character sequences
+    if (!hasValidWordRatio(lowerText)) {
+        return {
+            isValid: false,
+            message: "Your challenge doesn't appear to contain valid words. Please write a clear challenge."
+        };
+    }
+
+    // Check for minimum word count (e.g., at least 3 words)
+    const wordCount = text.trim().split(/\s+/).length;
+    if (wordCount < 3) {
+        return {
+            isValid: false,
+            message: "Please describe your challenge in at least 3 words."
+        };
+    }
+
+    // Add common word validation
+    if (!hasEnoughCommonWords(text)) {
+        return {
+            isValid: false,
+            message: "Your challenge is unclear. Please use more common words to describe it."
+        };
+    }
+
+    // Add offensive content check
+    if (containsOffensiveContent(text)) {
+        return {
+            isValid: false,
+            message: "Please rephrase your challenge using more appropriate language."
+        };
+    }
+
+    return { isValid: true };
+}
 
 // Wait for the DOM to fully load
 document.addEventListener("DOMContentLoaded", () => {
@@ -58,6 +137,13 @@ document.addEventListener("DOMContentLoaded", () => {
         
         if (challenge.length > MAX_CHALLENGE_LENGTH) {
             displayAdvice(`Your challenge description is too long. Please keep it under ${MAX_CHALLENGE_LENGTH} characters.`, true);
+            return false;
+        }
+
+        // Add natural language validation
+        const validationResult = isValidChallenge(challenge);
+        if (!validationResult.isValid) {
+            displayAdvice(validationResult.message, true);
             return false;
         }
 
