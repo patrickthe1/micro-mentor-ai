@@ -1,3 +1,18 @@
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+
+
+
 // Wait for the DOM to fully load
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("challenge-form");
@@ -7,57 +22,95 @@ document.addEventListener("DOMContentLoaded", () => {
     const buttonText = submitButton.querySelector(".button-text");
     const spinner = submitButton.querySelector(".spinner");
 
+    const MIN_CHALLENGE_LENGTH = 10;
+    const MAX_CHALLENGE_LENGTH = 200;
+
     // Function to set loading state
     const setLoadingState = (isLoading) => {
-        console.log('Setting loading state:', isLoading);
-        console.log('Spinner element:', spinner);
         submitButton.disabled = isLoading;
         spinner.classList.toggle("hidden", !isLoading);
         buttonText.style.display = isLoading ? "none" : "inline";
-        console.log('Spinner classes after toggle:', spinner.classList.toString());
     };
 
     // Function to display advice with animation
-    const displayAdvice = (text) => {
-        console.log('Displaying advice:', text);
+    const displayAdvice = (text, isError = false) => {
         adviceOutput.textContent = text;
-        adviceOutput.classList.remove("show");
+        adviceOutput.classList.remove("show", "error");
+        if (isError) {
+            adviceOutput.classList.add("error");
+        }
         // Force a reflow to restart animation
         void adviceOutput.offsetWidth;
         adviceOutput.classList.add("show");
-        console.log('Advice output classes:', adviceOutput.classList.toString());
+    };
+
+    // Function to validate challenge input
+    const validateChallenge = (challenge) => {
+        if (!challenge) {
+            displayAdvice("Please enter a challenge to get advice for.", true);
+            return false;
+        }
+        
+        if (challenge.length < MIN_CHALLENGE_LENGTH) {
+            displayAdvice(`Please enter at least ${MIN_CHALLENGE_LENGTH} characters to describe your challenge.`, true);
+            return false;
+        }
+        
+        if (challenge.length > MAX_CHALLENGE_LENGTH) {
+            displayAdvice(`Your challenge description is too long. Please keep it under ${MAX_CHALLENGE_LENGTH} characters.`, true);
+            return false;
+        }
+
+        return true;
     };
 
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
-        const challenge = userChallengeInput.value;
-        console.log('Form submitted with challenge:', challenge);
+        const challenge = userChallengeInput.value.trim();
         
-        // Set loading state
+        // Validate before proceeding with API call
+        if (!validateChallenge(challenge)) {
+            return;
+        }
+
+        // If validation passes, proceed with the API call
         setLoadingState(true);
         adviceOutput.classList.remove("show");
 
         try {
-            console.log('Sending fetch request...');
-            const response = await fetch("http://localhost:5000/api/advice", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ challenge }),
-            });
-
-            if (!response.ok) {
-                throw new Error("Network response was not ok");
+            // First check if we're online
+            if (!navigator.onLine) {
+                throw new Error("Network error: Please check your internet connection and try again.");
             }
 
-            const data = await response.json();
+            let response;
+            try {
+                response = await fetch("http://localhost:5000/api/advice", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ challenge }),
+                });
+            } catch (fetchError) {
+                throw new Error("Network error: Please check your internet connection and try again.");
+            }
+
+            let data;
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                throw new Error("Failed to parse server response. Please try again.");
+            }
+
+            if (!response.ok) {
+                throw new Error(data.error || "Server error: Failed to get advice. Please try again.");
+            }
+
             displayAdvice(data.advice);
         } catch (error) {
-            displayAdvice("Error fetching advice. Please try again.");
-            console.error("Error:", error);
+            displayAdvice(error.message || "An unexpected error occurred. Please try again.", true);
         } finally {
-            // Reset loading state
             setLoadingState(false);
         }
     });

@@ -136,6 +136,12 @@ button:disabled {
     line-height: 1.7;
     opacity: 0;
     word-wrap: break-word; /* Prevent text overflow */
+    transition: border-left-color 0.3s ease;
+}
+
+#advice-output.error {
+    border-left-color: #ff4d4d;
+    background: #2a2326;
 }
 
 #advice-output.show {

@@ -4,29 +4,72 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-export async function getCoachingAdvice(userInput) {
-  try {
-    const prompt = `
-      Provide a concise and direct response (no more than 1000 characters) to the following challenge:
-      "${userInput}"
-      
-      Keep it practical, clear, and straight to the point.
-    `;
+// Retry configuration
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
 
-    const result = await model.generateContent(prompt);
-    let advice = result.response.text();
+// Helper function to delay execution
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-    // Ensure the response is under 1000 characters
-    if (advice.length > 1000) {
-      advice = advice.slice(0, 997) + "..."; // Trim and add ellipsis
+// Function to make request with retry logic
+async function makeRequest(prompt) {
+    let lastError;
+    
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            return response.text();
+        } catch (error) {
+            lastError = error;
+            // Only log in development environment
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`Attempt ${attempt} failed:`, error.message);
+                if (attempt < MAX_RETRIES && error.status === 503) {
+                    console.log(`Retrying in ${RETRY_DELAY/1000} seconds...`);
+                }
+            }
+            
+            if (attempt < MAX_RETRIES && error.status === 503) {
+                await delay(RETRY_DELAY);
+                continue;
+            }
+            
+            throw new Error(getUserFriendlyErrorMessage(error));
+        }
     }
+    
+    throw lastError;
+}
 
-    return advice;
-  } catch (error) {
-    console.error("Error fetching AI response:", error);
-    return "Sorry, I couldn't generate advice at the moment.";
-  }
+// Function to get user-friendly error messages
+function getUserFriendlyErrorMessage(error) {
+    if (error.status === 503) {
+        return "The AI service is temporarily busy. Please try again in a moment.";
+    }
+    if (error.status === 429) {
+        return "We've reached our API limit. Please try again later.";
+    }
+    if (error.status === 401 || error.status === 403) {
+        return "There's an issue with the API authentication. Please contact support.";
+    }
+    return "Something went wrong. Please try again later.";
+}
+
+export async function generateAdvice(challenge) {
+    const prompt = `As a life coach, provide a concise, practical piece of advice (max 280 characters) for someone facing this challenge: "${challenge}". Focus on actionable steps and positive encouragement.`;
+    
+    try {
+        const advice = await makeRequest(prompt);
+        return advice;
+    } catch (error) {
+        // Only log in development environment
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Error generating advice:", error);
+        }
+        throw error;
+    }
 }
 
