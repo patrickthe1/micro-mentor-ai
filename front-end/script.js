@@ -172,7 +172,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             let response;
             try {
-                response = await fetch("https://micro-mentor-ai.onrender.com", {
+                const API_URL = "https://micro-mentor-ai.onrender.com/api/advice";
+                response = await fetch(API_URL, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
