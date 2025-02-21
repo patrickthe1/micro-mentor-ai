@@ -172,7 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             let response;
             try {
-                response = await fetch("http://192.168.0.103:5000/api/advice", {
+                response = await fetch("https://micro-mentor-ai.onrender.com", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
