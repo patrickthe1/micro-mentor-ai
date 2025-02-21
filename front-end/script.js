@@ -162,8 +162,11 @@ document.addEventListener("DOMContentLoaded", () => {
         adviceOutput.classList.remove("show");
 
         try {
-            // First check if we're online
-            if (!Navigator.onLine) {
+            // Move the event listeners outside the try block and form submit
+            // They only need to be set up once when the page loads
+            
+            // Simple offline check
+            if (!navigator.onLine) {
                 throw new Error("You appear to be offline. Please check your internet connection.");
             }
 
@@ -177,7 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     body: JSON.stringify({ challenge }),
                 });
             } catch (fetchError) {
-                // This error occurs when the server is unreachable
+                // This will catch network errors (like no connection)
                 throw new Error("Server connection error. Please check if the server is running.");
             }
 

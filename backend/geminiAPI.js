@@ -24,13 +24,6 @@ async function makeRequest(prompt) {
             return response.text();
         } catch (error) {
             lastError = error;
-            // Only log in development environment
-            if (process.env.NODE_ENV === 'development') {
-                console.log(`Attempt ${attempt} failed:`, error.message);
-                if (attempt < MAX_RETRIES && error.status === 503) {
-                    console.log(`Retrying in ${RETRY_DELAY/1000} seconds...`);
-                }
-            }
             
             if (attempt < MAX_RETRIES && error.status === 503) {
                 await delay(RETRY_DELAY);
@@ -65,10 +58,6 @@ export async function generateAdvice(challenge) {
         const advice = await makeRequest(prompt);
         return advice;
     } catch (error) {
-        // Only log in development environment
-        if (process.env.NODE_ENV === 'development') {
-            console.error("Error generating advice:", error);
-        }
         throw error;
     }
 }
