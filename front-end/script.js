@@ -181,7 +181,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             } catch (fetchError) {
                 // This will catch network errors (like no connection)
-                throw new Error("Server connection error. Please check if the server is running.");
+                throw new Error("Server connection error. Try agaain later.");
             }
 
             let data;
