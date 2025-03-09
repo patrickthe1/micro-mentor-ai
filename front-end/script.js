@@ -172,7 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             let response;
             try {
-                const API_URL = "https://micro-mentor-ai.onrender.com/api/advice";
+                const API_URL = "http://localhost:5000/api/advice";
                 response = await fetch(API_URL, {
                     method: "POST",
                     headers: {
