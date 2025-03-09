@@ -172,7 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             let response;
             try {
-                const API_URL = "http://localhost:5000/api/advice";
+                const API_URL = "https://micro-mentor-ai.onrender.com/api/advice";
                 response = await fetch(API_URL, {
                     method: "POST",
                     headers: {
@@ -182,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             } catch (fetchError) {
                 // This will catch network errors (like no connection)
-                throw new Error("Server connection error. Try agaain later.");
+                throw new Error("Server connection error. Try again later.");
             }
 
             let data;
