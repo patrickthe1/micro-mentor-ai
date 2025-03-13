@@ -1,0 +1,32 @@
+# Node dependencies  
+node_modules/  
+
+# Environment variables  
+.env  
+
+# Logs  
+npm-debug.log*  
+yarn-debug.log*  
+yarn-error.log*  
+
+# Editor/OS-specific files  
+.DS_Store  
+.vscode/  
+.idea/  
+Thumbs.db  
+
+# Project documentation (to be kept local only)
+Resources/
+
+# Test files
+.nyc_output/
+coverage/
+
+# Cursor AI metadata (if any)  
+cursorrules.md
+
+# Git line endings
+.gitattributes
+
+# Project documentation (to be kept local only)
+projectContext.md

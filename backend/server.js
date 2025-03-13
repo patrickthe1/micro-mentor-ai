@@ -11,7 +11,7 @@ app.use(express.json());
 
 app.post("/api/advice", async (req, res) => {
   try {
-    const { challenge } = req.body;
+    const { challenge, category } = req.body;
     
     if (!challenge || challenge.trim().length === 0) {
       return res.status(400).json({ 
@@ -19,11 +19,14 @@ app.post("/api/advice", async (req, res) => {
       });
     }
 
-    const advice = await generateAdvice(challenge);
-    res.json({ advice });
+    // Pass both challenge and optional category to generateAdvice
+    const advice = await generateAdvice(challenge, category);
+    
+    // Return the structured response directly
+    res.json(advice);
   } catch (error) {
     // Always log the full error in development
-    // console.error('Full error:', error); // Removed for production
+    console.error('API Error:', error.message);
     
     // Handle specific API errors
     if (error.message.includes("AI service is temporarily busy")) {
@@ -37,6 +40,25 @@ app.post("/api/advice", async (req, res) => {
       error: `Server error: ${error.message}` 
     });
   }
+});
+
+// New endpoint to get available categories
+app.get("/api/categories", (req, res) => {
+  // These categories are aligned with the advice domain
+  const categories = [
+    "Career Development",
+    "Skill Improvement",
+    "Work-Life Balance",
+    "Leadership",
+    "Communication",
+    "Networking",
+    "Project Management",
+    "Time Management",
+    "Conflict Resolution",
+    "Professional Relationships"
+  ];
+  
+  res.json({ categories });
 });
 
 app.get("/", (req, res) => {
