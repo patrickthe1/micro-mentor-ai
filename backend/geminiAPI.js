@@ -23,8 +23,9 @@ async function makeRequest(prompt) {
     
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
-            // Using the Gemini 1.5 Flash model for faster response times
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            // Updated to use Gemini 2.0 Flash model as per Google's recommendation
+            // Previous model "gemini-1.5-flash" will be discontinued on September 24, 2025
+            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
             const result = await model.generateContent(prompt);
             const response = await result.response;
             return response.text();
