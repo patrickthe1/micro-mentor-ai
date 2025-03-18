@@ -9,6 +9,10 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second
 
+// Cache configuration
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const responseCache = new Map();
+
 // Helper function to delay execution
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -163,6 +167,32 @@ function createFallbackResponse(challenge) {
 }
 
 /**
+ * Creates a cache key from the challenge and category
+ * @param {string} challenge - The challenge text
+ * @param {string|null} category - The optional category
+ * @returns {string} - A cache key
+ */
+function createCacheKey(challenge, category) {
+    // Normalize challenge by removing extra spaces, converting to lowercase
+    const normalizedChallenge = challenge.trim().toLowerCase().replace(/\s+/g, ' ');
+    
+    // Combine challenge and category (if present) for the cache key
+    return `${normalizedChallenge}|${category || 'none'}`;
+}
+
+/**
+ * Checks if a cache entry is still valid based on its timestamp
+ * @param {Object} cacheEntry - The cache entry with timestamp
+ * @returns {boolean} - Whether the cache entry is still valid
+ */
+function isCacheValid(cacheEntry) {
+    if (!cacheEntry || !cacheEntry.timestamp) return false;
+    
+    const now = Date.now();
+    return (now - cacheEntry.timestamp) < CACHE_TTL;
+}
+
+/**
  * Generates structured advice for a given challenge
  * @param {string} challenge - The challenge to generate advice for
  * @param {string} [category] - Optional category for the advice
@@ -170,6 +200,21 @@ function createFallbackResponse(challenge) {
  * @throws {Error} - If the request fails or response can't be properly formatted
  */
 export async function generateAdvice(challenge, category = null) {
+    // Check cache first
+    const cacheKey = createCacheKey(challenge, category);
+    
+    // If we have a valid cached response, return it
+    if (responseCache.has(cacheKey)) {
+        const cachedResponse = responseCache.get(cacheKey);
+        if (isCacheValid(cachedResponse)) {
+            console.log(`Cache hit for: "${challenge.substring(0, 30)}..."`);
+            return cachedResponse.data;
+        } else {
+            // Remove expired cache entry
+            responseCache.delete(cacheKey);
+        }
+    }
+    
     // Enhanced prompt that encourages structured responses
     const prompt = `
 You are MicroMentor AI, a professional mentor for young professionals. Provide structured, actionable advice for someone facing this challenge:
@@ -234,10 +279,44 @@ ${category ? `- Focus on the "${category}" category` : ''}
             responseJson.generation_timestamp = new Date().toISOString();
         }
         
+        // Cache the valid response
+        responseCache.set(cacheKey, {
+            timestamp: Date.now(), // When it was cached
+            data: responseJson     // The actual response data
+        });
+        
+        // Log cache size for monitoring
+        if (responseCache.size % 10 === 0) {
+            console.log(`Cache size: ${responseCache.size} entries`);
+        }
+        
         return responseJson;
     } catch (error) {
         console.error("Error generating advice:", error);
         throw error;
     }
 }
+
+/**
+ * Clears expired entries from the cache
+ * This can be called periodically or on demand to maintain cache health
+ * @returns {number} - Number of cache entries removed
+ */
+export function cleanupCache() {
+    let removedCount = 0;
+    const now = Date.now();
+    
+    for (const [key, entry] of responseCache.entries()) {
+        if (now - entry.timestamp >= CACHE_TTL) {
+            responseCache.delete(key);
+            removedCount++;
+        }
+    }
+    
+    console.log(`Cache cleanup: removed ${removedCount} expired entries. Current size: ${responseCache.size}`);
+    return removedCount;
+}
+
+// Set up a daily cache cleanup
+setInterval(cleanupCache, 24 * 60 * 60 * 1000); // Run once daily
 

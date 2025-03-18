@@ -1,12 +1,12 @@
 # Micro-Mentor AI Project - Cursor AI Guidelines
 
 ## Project Overview
-Micro-Mentor AI is a web application that provides AI-generated advice to young professionals. The app is currently a basic HTML/CSS/JS application with a Node.js/Express backend using the Gemini API. We're converting the frontend to React and Tailwind CSS based on a UI design from V0.
+Micro-Mentor AI is a web application that provides AI-generated advice to young professionals. The app has transitioned from a basic HTML/CSS/JS application to a more robust React and Tailwind CSS frontend, enhancing the user experience based on the V0 UI design.
 
 ## Current Status
-- Basic HTML/CSS/JS frontend hosted on Netlify (micro-mentor.netlify.app) but i also have it locally on my computer 
-- Node.js/Express backend hosted on Render again, i have it locally on my computer 
-- Simple request-response flow (user submits challenge → backend fetches advice from Gemini API)
+- The React/Tailwind CSS frontend is fully operational and pushed on github, with a local version available for development.
+- The Node.js/Express backend has been enhanced also accessible locally for testing and development.
+- The application now features a structured request-response flow where users submit challenges, and the backend fetches categorized advice from the Gemini API, ensuring a more organized and efficient interaction.
 
 ## Development Goals
 - Follow the [# MICRO-MENTOR AI: COMPREHENSIVE DEVELOPMENT ROADMAP](Roadmap.md) to complete this project
@@ -27,9 +27,7 @@ Micro-Mentor AI is a web application that provides AI-generated advice to young 
 7. Reference this file when providing assistance
 8.Feel free to respectfully reject a prompt if it doesn't align with the phases in  [# MICRO-MENTOR AI: COMPREHENSIVE DEVELOPMENT ROADMAP](Roadmap.md)
 
-## Backend Integration
-The backend API is at https://micro-mentor-ai.onrender.com and has the following endpoints:
-- POST /api/advice - Accepts a challenge string and returns advice
+
 
 ## File Structure Reference
 React components should follow this structure:
