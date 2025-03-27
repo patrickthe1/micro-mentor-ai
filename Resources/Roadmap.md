@@ -60,52 +60,44 @@
 - Fix any bugs discovered during testing
 - Finalize API documentation for frontend integration
 
-### PHASE 2: INSIGHT PATHWAYS IMPLEMENTATION (10 Days)
-*With improved backend responses, we can now build the core Insight Pathways feature.*
+### PHASE 2: FRONTEND MVP STRUCTURE WITH Lovable (10 Days)
+*Rebuilding the frontend for the Minimum Viable Product (MVP) using Lovable's project features to create connected screens and components.*
 
 #### Success Metrics for Phase 2:
-- Smooth animations with no jank (60fps)
-- All components render correctly across device sizes
-- User can navigate through steps intuitively with visual feedback
+- Basic user flow implemented: Challenge submission -> Loading -> Insight Pathways display.
+- Core UI elements for Insight Pathways are functional.
+- Frontend project structure is set up for backend integration.
 
 #### Dependencies:
-- Requires completion of Milestone 1.2 (Response Quality Improvement) to ensure proper response format
+- Requires completion of Milestone 1.2 (Response Quality Improvement) to ensure proper response format for the Insight Pathways display.
 
-#### Milestone 2.1: Design Research & Planning (2 Days)
-- Research top-tier application designs on Dribbble, Mobbin, etc.
-- Create mood board of inspirational UI patterns
-- Document key UI/UX elements to incorporate:
-  * Step progression indicators
-  * Expandable/collapsible sections
-  * Color coding for difficulty levels
-  * Animation timing and easing functions
-- Design wireframes for Insight Pathways component
-- Define animations and interaction patterns
-- Select appropriate Tailwind utility patterns for implementation
+#### Milestone 2.1: Define MVP Screens and Information Flow (2 Days)
+- Detail the essential screens for the MVP:
+    - **Initial Screen/Homepage:** Briefly describe the purpose and key elements (e.g., a welcome message, an input field for the user's challenge, a submit button).
+    - **Loading Screen:** Describe what the user will see while the AI is processing (e.g., a simple animation, a message indicating loading).
+    - **Insight Pathways Screen:** Detail how the AI-generated advice will be presented, including:
+        - Step progression indicators (visual style and placement).
+        - How individual steps will be displayed (title, expandable/collapsible description).
+        - How difficulty levels will be indicated (color coding or other visual cues).
+- Define the user flow: How will the user navigate from the initial screen to the loading screen and then to the Insight Pathways screen?
 
-#### Milestone 2.2: Component Structure Implementation (3 Days)
-- Create InsightPathway container component
-- Implement InsightStep component for individual steps
-- Build ProgressIndicator component
-- Develop ExpandCollapseControls component
-- Ensure all components are responsive
+#### Milestone 2.2: Design in Lovable.dev (4 Days)
+- Create a new project in Lovable ([https://lovable.dev/](https://lovable.dev/)).
+- Design each of the MVP screens (Initial, Loading, Insight Pathways) within the Lovable project based on the details defined in Milestone 2.1.
+- Utilize Lovable's features to create the necessary components for each screen (e.g., input fields, buttons, progress indicators, step lists, expandable sections).
+- Define the connections and navigation flow between these screens within the Lovsblr project.
+- Experiment with different UI layouts and styles to find a visually appealing and user-friendly design.
 
-#### Milestone 2.3: Visual Polish & Animations (3 Days)
-- Implement fade-in animations for steps
-- Add hover effects and visual feedback
-- Create smooth transitions between states
-- Implement progress tracking visuals
-- Add microinteractions for engagement
+#### Milestone 2.3: Migrate Lovable Frontend to Local Environment (1 Day)
+- Once the MVP frontend structure and basic design are complete in Lovable, export or copy the generated React code (or the entire project if Lovable allows) into your local development environment where your original frontend project was located (you might consider creating a new branch or a new folder for this Lovable-generated frontend).
 
-#### Milestone 2.4: Integration & Testing (2 Days)
-- Connect to enhanced backend API
-- Test with various response lengths and formats
-- Implement error boundaries for component resilience
-- Optimize performance for larger responses:
-  * Render time under 200ms
-  * No visible layout shifts during expansion/collapse
-  * Smooth scrolling at 60fps
-- Fix visual bugs across different screen sizes
+#### Milestone 2.4: Integrate Backend with Cursor (3 Days)
+- Using Cursor, start integrating the backend functionality with the Lovable-generated frontend:
+    - Set up API calls from the frontend to your deployed backend (using the URL for `micro-mentor-ai-backend-v2.onrender.com`).
+    - Connect the challenge input field on the initial screen to trigger an API call to the `/api/advice` endpoint.
+    - Implement the loading screen to be displayed while waiting for the API response.
+    - Parse the structured advice data received from the backend and dynamically render it in the Insight Pathways component.
+    - Ensure that the UI elements (step progression, expandable sections, difficulty indicators) are correctly populated with data from the backend.
 
 ### PHASE 3: CATEGORY SELECTION (5 Days)
 *Now that our core functionality works well, we'll add category filtering.*
