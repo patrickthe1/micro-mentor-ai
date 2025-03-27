@@ -1,5 +1,5 @@
 # Micro-Mentor AI Project Status
-Last updated: March 28, 2025
+Last updated: March 30, 2025
 
 ## Current Status
 ### Frontend
@@ -9,7 +9,7 @@ Last updated: March 28, 2025
   * Homepage with challenge input and taglines
   * Loading screen with progress indicators
   * Insight page with detailed advice display
-- Category selection feature implemented with visual indicators
+- Dynamic category selection feature with API integration
 - API integration fully implemented with proper error handling
 - Session storage management for state persistence
 - Responsive design with mobile-first approach
@@ -29,22 +29,28 @@ Last updated: March 28, 2025
 - Comprehensive API documentation created
 - Backend deployed at `micro-mentor-ai-backend-v2.onrender.com`
 
-## Latest Updates (March 28, 2025)
+## Latest Updates (March 30, 2025)
 
-### Category Selection Implementation
-- Created a `CategorySelector` component with visual UI for five categories:
-  * Productivity
-  * Career Growth
-  * Work-Life Balance
-  * Skill Development
-  * Leadership
-- Implemented proper TypeScript interfaces for category data
-- Added state management for selected category in parent component
-- Integrated category selection with API service 
-- Stored selected category in session storage for cross-page access
-- Implemented clear functionality to reset category selection
-- Added visual feedback when category is selected
-- Ensured full mobile responsiveness with grid layout
+### Category Selection Bug Fixes
+- Fixed invalid category error by dynamically fetching valid categories from the API
+- Updated Category type to use string instead of literal types for better flexibility
+- Added category validation before API submission to prevent errors
+- Implemented proper error handling for category-related errors
+- Added loading indicator during category fetch
+- Created fallback to hardcoded categories if API fetch fails
+- Added category icons mapping for all possible backend categories
+- Ensured only first 5 categories are shown to maintain UI consistency
+- Added client-side validation against server categories
+
+### Loading and API Response Improvements
+- Enhanced loading screen with better error handling
+- Added validation of API responses before navigation
+- Improved fallback timing for long-running requests
+- Added toast notifications for various API states
+- Implemented more robust error handling with better user feedback
+- Fixed intermittent loading of placeholder content by improving state transitions
+- Added debug logging for API interactions
+- Improved error message display for user understanding
 
 ### Frontend Implementation
 - Completed full API integration in Index.tsx
@@ -156,7 +162,25 @@ Last updated: March 28, 2025
   * Documented error codes and schema details
   * Included deployment instructions
 
-## Tasks Completed (March 11-28, 2025)
+## Tasks Completed (March 11-30, 2025)
+
+### Bug Fixes (March 29-30, 2025)
+
+#### Task 1: Category Selection Integration Fix ✅
+- Fixed invalid category error by aligning frontend categories with backend
+- Updated CategorySelector to dynamically fetch valid categories from API
+- Implemented category validation before API submission
+- Added better error handling for category-related issues
+- Created a loading state for categories
+- Added fallback mechanism if category fetch fails
+
+#### Task 2: Loading and API Response Improvements ✅
+- Fixed intermittent placeholder content issue in Insight page
+- Enhanced validation of API responses before navigation
+- Added more comprehensive error handling
+- Improved loading screen behavior with better feedback
+- Added debug logging for API interactions
+- Fixed state transition issues between screens
 
 ### Frontend Tasks (March 22-28, 2025)
 
