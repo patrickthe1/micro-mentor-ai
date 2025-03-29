@@ -196,10 +196,11 @@ function isCacheValid(cacheEntry) {
  * Generates structured advice for a given challenge
  * @param {string} challenge - The challenge to generate advice for
  * @param {string} [category] - Optional category for the advice
+ * @param {string} [customizations] - Optional user preferences to customize the advice
  * @returns {Promise<Object>} - A structured advice object following the schema
  * @throws {Error} - If the request fails or response can't be properly formatted
  */
-export async function generateAdvice(challenge, category = null) {
+export async function generateAdvice(challenge, category = null, customizations = null) {
     // Check cache first
     const cacheKey = createCacheKey(challenge, category);
     
@@ -216,7 +217,7 @@ export async function generateAdvice(challenge, category = null) {
     }
     
     // Enhanced prompt that encourages structured responses
-    const prompt = `
+    let prompt = `
 You are MicroMentor AI, a professional mentor for young professionals. Provide structured, actionable advice for someone facing this challenge:
 
 "${challenge}"
@@ -258,8 +259,12 @@ IMPORTANT:
 - Make sure all JSON is properly formatted with no trailing commas
 - Use a professional, encouraging tone appropriate for mentorship
 - Be specific and actionable rather than generic
-${category ? `- Focus on the "${category}" category` : ''}
-`;
+${category ? `- Focus on the "${category}" category` : ''}`;
+
+    // Add customizations if provided
+    if (customizations) {
+        prompt += `\n\n${customizations}`;
+    }
 
     try {
         // Make the request to the Gemini API

@@ -67,7 +67,7 @@ app.use((req, res, next) => {
 
 app.post("/api/advice", async (req, res) => {
   try {
-    const { challenge, category, version } = req.body;
+    const { challenge, category, customizations } = req.body;
     
     if (!challenge || challenge.trim().length === 0) {
       return res.status(400).json({ 
@@ -103,7 +103,7 @@ app.post("/api/advice", async (req, res) => {
     const startTime = Date.now();
     
     // Pass both challenge and optional category to generateAdvice
-    const advice = await generateAdvice(challenge, category);
+    const advice = await generateAdvice(challenge, category, customizations);
     
     // Calculate response time
     const responseTime = Date.now() - startTime;
@@ -112,7 +112,7 @@ app.post("/api/advice", async (req, res) => {
     console.log(`Response time: ${responseTime}ms for challenge: "${challenge.substring(0, 30)}..."`);
     
     // Add versioning to the response
-    const responseVersion = version || API_VERSION;
+    const responseVersion = req.body.version || API_VERSION;
     const response = {
       apiVersion: responseVersion,
       data: advice,
