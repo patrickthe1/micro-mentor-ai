@@ -3,6 +3,9 @@ import cors from "cors";
 import dotenv from "dotenv";
 import rateLimit from "express-rate-limit";
 import { generateAdvice, cleanupCache } from "./geminiAPI.js";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import { v4 as uuidv4 } from 'uuid';
 
 dotenv.config();
 
@@ -12,6 +15,34 @@ app.use(express.json());
 
 // Current API version
 const API_VERSION = "1.0";
+
+// Simple in-memory user store (replace with a real database in production)
+const users = [];
+
+// JWT authentication middleware
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({
+      apiVersion: API_VERSION,
+      error: "Unauthorized. Authentication token required."
+    });
+  }
+  
+  jwt.verify(token, process.env.JWT_SECRET || 'micro-mentor-secret-key', (err, user) => {
+    if (err) {
+      return res.status(403).json({
+        apiVersion: API_VERSION,
+        error: "Forbidden. Invalid or expired token."
+      });
+    }
+    
+    req.user = user;
+    next();
+  });
+};
 
 // Configure rate limiting
 const limiter = rateLimit({
@@ -152,7 +183,10 @@ app.get("/api/version", (req, res) => {
       { path: "/api/categories", method: "GET", description: "Get available advice categories" },
       { path: "/api/version", method: "GET", description: "Get API version information" },
       { path: "/api/admin/cache", method: "POST", description: "Admin endpoint to manage response cache" },
-      { path: "/health", method: "GET", description: "Health check endpoint" }
+      { path: "/health", method: "GET", description: "Health check endpoint" },
+      { path: "/api/signup", method: "POST", description: "Create a new user account" },
+      { path: "/api/login", method: "POST", description: "Authenticate a user" },
+      { path: "/api/profile", method: "GET", description: "Get authenticated user profile" }
     ]
   });
 });
@@ -194,6 +228,155 @@ app.get("/health", (req, res) => {
     status: "ok",
     timestamp: new Date().toISOString()
   });
+});
+
+// Authentication Endpoints
+app.post("/api/signup", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({
+        apiVersion: API_VERSION,
+        error: "Email and password are required."
+      });
+    }
+    
+    // Check if user already exists
+    const existingUser = users.find(user => user.email === email);
+    if (existingUser) {
+      return res.status(409).json({
+        apiVersion: API_VERSION,
+        error: "User with this email already exists."
+      });
+    }
+    
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    
+    // Create new user
+    const newUser = {
+      id: uuidv4(),
+      email,
+      password: hashedPassword,
+      createdAt: new Date().toISOString()
+    };
+    
+    users.push(newUser);
+    
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: newUser.id, email: newUser.email },
+      process.env.JWT_SECRET || 'micro-mentor-secret-key',
+      { expiresIn: '7d' }
+    );
+    
+    // Return user data (excluding password) and token
+    res.status(201).json({
+      apiVersion: API_VERSION,
+      data: {
+        token,
+        user: {
+          id: newUser.id,
+          email: newUser.email
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Signup Error:', error);
+    res.status(500).json({
+      apiVersion: API_VERSION,
+      error: "Server error during signup process."
+    });
+  }
+});
+
+app.post("/api/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({
+        apiVersion: API_VERSION,
+        error: "Email and password are required."
+      });
+    }
+    
+    // Find user
+    const user = users.find(user => user.email === email);
+    if (!user) {
+      return res.status(401).json({
+        apiVersion: API_VERSION,
+        error: "Invalid credentials."
+      });
+    }
+    
+    // Verify password
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      return res.status(401).json({
+        apiVersion: API_VERSION,
+        error: "Invalid credentials."
+      });
+    }
+    
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET || 'micro-mentor-secret-key',
+      { expiresIn: '7d' }
+    );
+    
+    // Return user data and token
+    res.json({
+      apiVersion: API_VERSION,
+      data: {
+        token,
+        user: {
+          id: user.id,
+          email: user.email
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Login Error:', error);
+    res.status(500).json({
+      apiVersion: API_VERSION,
+      error: "Server error during login process."
+    });
+  }
+});
+
+app.get("/api/profile", authenticateToken, (req, res) => {
+  try {
+    const user = users.find(user => user.id === req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({
+        apiVersion: API_VERSION,
+        error: "User not found."
+      });
+    }
+    
+    // Return user data (excluding password)
+    res.json({
+      apiVersion: API_VERSION,
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          createdAt: user.createdAt
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Profile Error:', error);
+    res.status(500).json({
+      apiVersion: API_VERSION,
+      error: "Server error while fetching profile."
+    });
+  }
 });
 
 app.get("/", (req, res) => {
